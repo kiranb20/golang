@@ -9,6 +9,10 @@ import (
 )
 
 func main() {
+
+	// Uncomment the line below to generate RSA keys (only when needed)
+	// GenerateRSAKeys() // Call the key generation function if required
+
 	// Initialize the database connection
 	database.InitDB()
 	defer database.DB.Close() // Close the database connection when the app exits
@@ -21,7 +25,6 @@ func main() {
 	r.POST("/register", handlers.RegisterUser)
 	r.POST("/login", handlers.LoginUserWithSession)
 	r.POST("/logout", handlers.LogoutUser) // New logout route
-	// r.GET("/session-check", handlers.CheckSession) // Session validation route
 
 	// Start the server
 	r.Run(":8080") // Runs the server on http://localhost:8080

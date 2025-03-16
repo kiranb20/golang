@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"todo-list/database" // Import the database package
 	"todo-list/models"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,14 +16,23 @@ func RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	log.Println("it came to password")
+
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	user.Password = string(hashedPassword)
 
+	// Insert the new user into the database
 	_, err := database.DB.Exec("INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
 		user.Name, user.Email, user.Password)
+
+	// Handle duplicate email error
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		// Check if the error is a duplicate entry error
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
+			c.JSON(http.StatusConflict, gin.H{"error": "User already exists"}) // HTTP 409 Conflict
+			return
+		}
+		// Handle other types of errors
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not register user"})
 		return
 	}
 

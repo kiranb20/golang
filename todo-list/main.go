@@ -15,10 +15,13 @@ func main() {
 
 	// Create a new Gin router
 	r := gin.Default()
+
 	log.Println("it came to route")
 	// Register routes
 	r.POST("/register", handlers.RegisterUser)
-	r.POST("/login", handlers.LoginUser)
+	r.POST("/login", handlers.LoginUserWithSession)
+	r.POST("/logout", handlers.LogoutUser) // New logout route
+	// r.GET("/session-check", handlers.CheckSession) // Session validation route
 
 	// Start the server
 	r.Run(":8080") // Runs the server on http://localhost:8080
